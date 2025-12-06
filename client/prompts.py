@@ -20,7 +20,7 @@ class PromptRepository(ABC):
     def load_prompt(self, prompt_id: str) -> Optional[Prompt]:
         pass
 
-    def remove_prompt(self, prompt: Prompt):
+    def remove_prompt(self, prompt_id: str):
         pass
 
 
@@ -44,3 +44,9 @@ class JSONRepository(PromptRepository):
                 return None
 
         return None
+
+    def remove_prompt(self, prompt_id: str):
+        if not (self.parent_directory / prompt_id).with_suffix(self.file_extension).exists():
+            raise FileNotFoundError(f'Prompt {prompt_id} not found.')
+
+        (self.parent_directory / prompt_id).with_suffix(self.file_extension).unlink()
