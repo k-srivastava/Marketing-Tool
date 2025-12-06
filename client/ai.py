@@ -87,9 +87,6 @@ class AIClient:
             )
         )
 
-        if response.text is not None:
-            raise ValueError('Response is not a parsed response.')
-
         if response.parsed is None:
             raise ValueError('Response is empty.')
 
