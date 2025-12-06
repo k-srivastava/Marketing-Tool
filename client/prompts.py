@@ -23,6 +23,18 @@ class Prompt[T](BaseModel):
     content: str
     examples: dict[str, T] = {}
 
+    def to_system_instruction(self) -> str:
+        """
+        Convert the prompt to a system instruction that can be fed into an LLM.
+        :return: The system instruction.
+        :rtype: str
+        """
+        example_string = 'Examples:'
+        for key, value in self.examples.items():
+            example_string += f'\n\tInput: {key}\n\tOutput: {value}\n'
+
+        return f'{self.content}\n\n{example_string}'
+
 
 class PromptRepository(ABC):
     """

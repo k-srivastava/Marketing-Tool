@@ -7,6 +7,7 @@ from typing import Literal, Type
 
 import dotenv
 from google import genai
+from google.genai.types import GenerateContentConfig
 from pydantic import BaseModel
 
 # All supported models by the application.
@@ -18,10 +19,12 @@ class AIClient:
     Wrapper over the Google Gemini client. Contains methods for generating text and parsed responses.
     """
 
-    def __init__(self, model_name: SUPPORTED_MODEL = 'gemini-2.5-pro'):
+    def __init__(self, system_instruction: str, model_name: SUPPORTED_MODEL = 'gemini-2.5-pro'):
         """
         Creates and validates a new client instance.
 
+        :param system_instruction: System instruction to be supplied to the model.
+        :type system_instruction: str
         :param model_name: Name of the Gemini model to use.
         :type model_name: SUPPORTED_MODEL
 
@@ -33,6 +36,7 @@ class AIClient:
         if google_api_key is None:
             raise EnvironmentError('GOOGLE_API_KEY not found in .env file. Please issue a key and add it.')
 
+        self.system_instruction = system_instruction
         self.model_name = model_name
         self._google_client = genai.Client(api_key=google_api_key)
 
@@ -47,7 +51,10 @@ class AIClient:
 
         :raises ValueError: If the response is not a text response, or is None.
         """
-        response = self._google_client.models.generate_content(model=self.model_name, contents=prompt)
+        response = self._google_client.models.generate_content(
+            model=self.model_name, contents=prompt,
+            config=GenerateContentConfig(system_instruction=self.system_instruction)
+        )
 
         if response.parsed is not None:
             raise ValueError('Response is not a text response.')
@@ -74,7 +81,10 @@ class AIClient:
         response = self._google_client.models.generate_content(
             model=self.model_name,
             contents=prompt,
-            config=genai.types.GenerateContentConfigDict(response_mime_type='application/json', response_schema=schema)
+            config=GenerateContentConfig(
+                system_instruction=self.system_instruction, response_mime_type='application/json',
+                response_schema=schema
+            )
         )
 
         if response.text is not None:
