@@ -3,18 +3,25 @@ Prompt and repositories for storing and loading prompts from the file system.
 """
 from abc import ABC
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional
 
 from pydantic import BaseModel, ValidationError
 
 
-class Prompt(BaseModel):
+class Prompt[T](BaseModel):
     """
-    Prompt model supplied to the AI client.
+    Encapsulates prompt-related information and functionalities.
+
+    :ivar id: Unique identifier for the prompt.
+    :type id: str
+    :ivar content: The textual content of the prompt.
+    :type content: str
+    :ivar examples: A dictionary mapping example keys to their corresponding values of type T.
+    :type examples: dict[str, T]
     """
     id: str
     content: str
-    examples: dict[str, Any] = {}
+    examples: dict[str, T] = {}
 
 
 class PromptRepository(ABC):
