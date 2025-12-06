@@ -1,3 +1,6 @@
+"""
+Prompt and repositories for storing and loading prompts from the file system.
+"""
 from abc import ABC
 from pathlib import Path
 from typing import Optional, Any
@@ -6,27 +9,61 @@ from pydantic import BaseModel, ValidationError
 
 
 class Prompt(BaseModel):
+    """
+    Prompt model supplied to the AI client.
+    """
     id: str
     content: str
     examples: dict[str, Any] = {}
 
 
 class PromptRepository(ABC):
+    """
+    General abstract base for storing and loading prompts.
+    """
     parent_directory: Path
     file_extension: str
 
     def save_prompt(self, prompt: Prompt):
-        pass
+        """
+        Save a prompt to the repository.
+
+        :param prompt: Prompt to save.
+        :type prompt: Prompt
+        """
 
     def load_prompt(self, prompt_id: str) -> Optional[Prompt]:
-        pass
+        """
+        Attempt to load a prompt from the repository.
+
+        :param prompt_id: ID of the prompt to load.
+        :type prompt_id: str
+        :return: The loaded prompt, or None if not found.
+        :rtype: Optional[Prompt]
+        """
 
     def remove_prompt(self, prompt_id: str):
-        pass
+        """
+        Attempt to remove a prompt from the repository.
+
+        :param prompt_id: ID of the prompt to remove.
+        :type prompt_id: str
+        :raises FileNotFoundError: If the prompt is not found.
+        """
 
 
 class JSONRepository(PromptRepository):
+    """
+    JSON file repository for storing prompts.
+    """
+
     def __init__(self, parent_directory: Path):
+        """
+        Create a new JSON repository. Creates a new directory in the file system if it does not exist.
+
+        :param parent_directory: Parent directory for the repository.
+        :type parent_directory: Path
+        """
         self.parent_directory = parent_directory
         self.file_extension = '.json'
 
