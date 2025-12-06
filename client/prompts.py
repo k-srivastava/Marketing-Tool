@@ -1,6 +1,6 @@
 from abc import ABC
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel, ValidationError
 
@@ -8,6 +8,7 @@ from pydantic import BaseModel, ValidationError
 class Prompt(BaseModel):
     id: str
     content: str
+    examples: dict[str, Any] = {}
 
 
 class PromptRepository(ABC):
