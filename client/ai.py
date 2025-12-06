@@ -7,7 +7,7 @@ from typing import Literal, Type
 
 import dotenv
 from google import genai
-from google.genai.types import GenerateContentConfig
+from google.genai.types import GenerateContentConfig, HttpOptions
 from pydantic import BaseModel
 
 # All supported models by the application.
@@ -38,9 +38,9 @@ class AIClient:
 
         self.system_instruction = system_instruction
         self.model_name = model_name
-        self._google_client = genai.Client(api_key=google_api_key)
+        self._google_client = genai.Client(api_key=google_api_key, http_options=HttpOptions(timeout=30000))
 
-    def generate_text_response(self, prompt: str) -> str:
+    async def generate_text_response(self, prompt: str) -> str:
         """
         Generate a plain text response from the given prompt.
 
@@ -51,7 +51,7 @@ class AIClient:
 
         :raises ValueError: If the response is not a text response, or is None.
         """
-        response = self._google_client.models.generate_content(
+        response = await self._google_client.aio.models.generate_content(
             model=self.model_name, contents=prompt,
             config=GenerateContentConfig(system_instruction=self.system_instruction)
         )
@@ -64,7 +64,7 @@ class AIClient:
 
         return response.text
 
-    def generate_parsed_response[T: BaseModel](self, prompt: str, schema: Type[T]) -> T:
+    async def generate_parsed_response[T: BaseModel](self, prompt: str, schema: Type[T]) -> T:
         """
         Generate a parsed response from the given prompt using Pydantic models and validation.
         The type variable T must be a Pydantic BaseModel used to parse the response.
@@ -78,7 +78,7 @@ class AIClient:
 
         :raises ValueError: If the response is not a parsed response, or is None.
         """
-        response = self._google_client.models.generate_content(
+        response = await self._google_client.aio.models.generate_content(
             model=self.model_name,
             contents=prompt,
             config=GenerateContentConfig(
