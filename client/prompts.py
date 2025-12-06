@@ -27,6 +27,11 @@ class Prompt[T](BaseModel):
 class PromptRepository(ABC):
     """
     General abstract base for storing and loading prompts.
+
+    :ivar parent_directory: Parent directory for the repository.
+    :type parent_directory: Path
+    :ivar file_extension: File extension for the prompt files.
+    :type file_extension: str
     """
     parent_directory: Path
     file_extension: str
