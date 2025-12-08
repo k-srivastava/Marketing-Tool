@@ -36,7 +36,7 @@ left, middle, right = st.columns(3, gap='large', vertical_alignment='top')
 
 with left:
     st.markdown('##### Hero Image')
-    st.caption('Main representation of your product.')
+    st.caption('Main representation of your product as the hero image in the final poster.')
 
     hero_image_raw = st.file_uploader(
         'Product Hero Image', type=['png', 'jpg'], accept_multiple_files=False, label_visibility='collapsed'
