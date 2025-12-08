@@ -2,6 +2,15 @@ import streamlit as st
 
 st.set_page_config(page_title='Asset Manager', initial_sidebar_state='collapsed')
 
+if 'hero_image' not in st.session_state:
+    st.session_state['hero_image'] = None
+
+if 'logo_image' not in st.session_state:
+    st.session_state['logo_image'] = None
+
+if 'support_images' not in st.session_state:
+    st.session_state['support_images'] = []
+
 st.markdown(
     """<h1 style="text-align: center;">Asset Manager</h1>
     <p style='text-align: center; color: #808080;'>Upload your product details and visuals to get started.</p>""",
@@ -33,6 +42,8 @@ with left:
         'Product Hero Image', type=['png', 'jpg'], accept_multiple_files=False, label_visibility='collapsed'
     )
 
+    st.session_state['hero_image'] = hero_image_raw
+
 with middle:
     st.markdown('##### Brand Logo')
     st.caption('Your brand logo (transparent background is recommended).')
@@ -41,11 +52,15 @@ with middle:
         'Brand Hero', type=['png', 'jpg'], accept_multiple_files=False, label_visibility='collapsed'
     )
 
+    st.session_state['logo_image'] = logo_image_raw
+
 with right:
     st.markdown('##### Support Images')
     st.caption('Additional angles or context shots to be optionally included.')
 
     support_images_raw = st.file_uploader('Support Images', type=['png', 'jpg'], label_visibility='collapsed')
+
+    st.session_state['support_images'] = support_images_raw
 
 st.divider()
 
