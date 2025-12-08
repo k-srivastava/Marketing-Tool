@@ -12,8 +12,93 @@ if 'support_images' not in st.session_state:
     st.session_state['support_images'] = []
 
 st.markdown(
+    """
+    <style>
+        .stApp {
+            background-color: #FFFFFF;
+        }
+
+        h1, h2, h3, h4, h5, p, div, label, span {
+            font-family: 'Helvetica Nueue', Arial, Helvetica, sans-serif;
+            color: #14213D;
+        }
+
+        h1 {
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FCA311;
+        }
+
+        .stTextArea textarea {
+            color: #14213D;
+            border: 2px solid #E5E5E5;
+            border-radius: 8px;
+            background-color: #FCFCFC;
+        }
+
+        .stTextArea textarea:focus {
+            border-color: #FCA311;
+            box-shadow: 0 0 0 1px #FCA311;
+        }
+
+        [data-testid="stFileUploader"] {
+            padding: 15px;
+            transition: border-color 0.3s;
+            border: 1px dashed #E5E5E5;
+            border-radius: 8px;
+            background-color: #F9F9F9;
+        }
+
+        [data-testid="stFileUploader"]:hover {
+            border-color: #FCA311;
+        }
+
+        [data-testid="stFileUploader"] small {
+            color: #8D99AE;
+        }
+
+        [data-testid="stMarkdownContainer"] hr {
+            border: 1px solid #14213D55;
+        }
+
+        div.stButton > button[kind="primary"] {
+            font-weight: 800;
+            padding: 1rem;
+            transition: all 0.2s ease-in-out;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #14213D;
+            border: none;
+            background-color: #FCA311;
+            box-shadow: 0 4px 10px rgba(252, 163, 17, 0.3);
+        }
+
+        div.stButton > button[kind="primary"]:hover {
+            transform: translateY(-2px);
+            color: #000000;
+            background-color: #E5940F;
+            box-shadow: 0 6px 15px rgba(252, 163, 17, 0.4);
+        }
+
+        [data-testid="stCaptionContainer"] {
+            font-size: 0.9em;
+            color: #5D6D7E !important;
+        }
+    </style>""",
+    unsafe_allow_html=True
+)
+
+st.markdown(
     """<h1 style="text-align: center;">Asset Manager</h1>
-    <p style='text-align: center; color: #808080;'>Upload your product details and visuals to get started.</p>""",
+    <p style='text-align: center; color: #5D6D7E; font-size: 1.1em;'>Upload your product details and visuals to get
+        started.</p>""",
     unsafe_allow_html=True
 )
 
@@ -26,7 +111,8 @@ with st.container():
         'Product Description',
         height=150,
         placeholder='Your detailed product description goes here...',
-        help="Provide as much detail as possible for better results."
+        help="Provide as much detail as possible for better results.",
+        label_visibility='collapsed'
     )
 
 st.divider()
