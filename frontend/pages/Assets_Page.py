@@ -127,29 +127,49 @@ with left:
     hero_image_raw = st.file_uploader(
         'Product Hero Image', type=['png', 'jpg'], accept_multiple_files=False, label_visibility='collapsed'
     )
-
-    st.session_state['hero_image'] = hero_image_raw
+    if hero_image_raw is not None:
+        st.session_state['hero_image'] = hero_image_raw
 
 with middle:
     st.markdown('##### Brand Logo')
     st.caption('Your brand logo (transparent background is recommended).')
 
     logo_image_raw = st.file_uploader(
-        'Brand Hero', type=['png', 'jpg'], accept_multiple_files=False, label_visibility='collapsed'
+        'Brand Hero', type=['png', 'jpg'], accept_multiple_files=False
     )
-
-    st.session_state['logo_image'] = logo_image_raw
+    if logo_image_raw is not None:
+        st.session_state['logo_image'] = logo_image_raw
 
 with right:
     st.markdown('##### Support Images')
     st.caption('Additional angles or context shots to be optionally included.')
+    if "extra_imgs" not in st.session_state:
+        st.session_state.extra_imgs = []
 
-    support_images_raw = st.file_uploader('Support Images', type=['png', 'jpg'], label_visibility='collapsed')
+    uploaded = st.file_uploader(
+        "Upload support images", type=["jpg", "png"], accept_multiple_files=True,
+        disabled=len(st.session_state.extra_imgs) >= 2)
+    if uploaded:
+        for file in uploaded:
+            if file.name not in [f.name for f in st.session_state.extra_imgs]:
+                if len(st.session_state.extra_imgs) < 2:
+                    st.session_state.extra_imgs.append(file)
+                else:
+                    st.error("You can only upload 2 images max.")
 
-    st.session_state['support_images'] = support_images_raw
+
+
+
+
+
+
+
+
 
 st.divider()
 
 _, middle, _ = st.columns([1, 2, 1])
 with middle:
-    st.button('Start Generation', type='primary', use_container_width=True)
+    submit = st.button('Start Generation', type='primary', use_container_width=True)
+    if submit:
+        st.switch_page("pages/Hero_Layout.py")
