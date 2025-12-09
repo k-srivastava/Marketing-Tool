@@ -11,6 +11,8 @@ from google import genai
 from google.genai.types import GenerateContentConfig, HttpOptions
 from pydantic import BaseModel
 
+from client.prompts import PromptRepository
+
 # All supported models by the application.
 SUPPORTED_MODEL: type[str] = Literal['gemini-2.5-flash', 'gemini-2.5-flash-image', 'gemini-2.5-pro']
 
@@ -20,14 +22,14 @@ class AIClient:
     Wrapper over the Google Gemini client. Contains methods for generating text and parsed responses.
     """
 
-    def __init__(self, system_instruction: str, model_name: SUPPORTED_MODEL = 'gemini-2.5-pro'):
+    def __init__(self, system_instruction: str, model_name: Literal[SUPPORTED_MODEL] = 'gemini-2.5-flash'):
         """
         Creates and validates a new client instance.
 
         :param system_instruction: System instruction to be supplied to the model.
         :type system_instruction: str
         :param model_name: Name of the Gemini model to use.
-        :type model_name: SUPPORTED_MODEL
+        :type model_name: Literal[SUPPORTED_MODEL]
 
         :raises EnvironmentError: If GOOGLE_API_KEY is not found in the .env file.
         """
@@ -41,6 +43,27 @@ class AIClient:
         self.model_name = model_name
         self._google_client = genai.Client(api_key=google_api_key, http_options=HttpOptions(timeout=30000))
 
+    @staticmethod
+    def from_prompt(
+            prompt_id: str, prompt_repository: PromptRepository,
+            model_name: Literal[SUPPORTED_MODEL] = 'gemini-2.5-flash'
+    ) -> 'AIClient':
+        """
+        Create a new AI client from a prompt ID and prompt repository.
+
+        :param prompt_id: ID of the prompt to load as a system instruction.
+        :type prompt_id: str
+        :param prompt_repository: Repository to load the prompt from.
+        :type prompt_repository: PromptRepository
+        :param model_name: Name of the Gemini model to use.
+        :type model_name: Literal[SUPPORTED_MODEL]
+
+        :return: Newly created AI client.
+        :rtype: AIClient
+        """
+        system_instruction = prompt_repository.load_prompt(prompt_id).to_system_instruction()
+        return AIClient(system_instruction, model_name)
+
     async def generate_text_response(self, prompt: str) -> str:
         """
         Generate a plain text response from the given prompt.
@@ -50,7 +73,7 @@ class AIClient:
         :return: Generated response.
         :rtype: str
 
-        :raises ValueError: If the response is not a text response, or is None.
+        :raises ValueError: If the response is not a text response or is None.
         """
         response = await self._google_client.aio.models.generate_content(
             model=self.model_name, contents=prompt,
@@ -81,7 +104,7 @@ class AIClient:
         :return: Parsed response as the Pydantic model instance.
         :rtype: T
 
-        :raises ValueError: If the response is not a parsed response, or is None.
+        :raises ValueError: If the response is not a parsed response or is None.
         """
         if image is None:
             contents = [prompt]
