@@ -3,15 +3,16 @@ AI wrapper for the Google Gemini client and related utilities.
 """
 
 import os
-from typing import Literal, Type
+from typing import Literal, Type, Optional
 
 import dotenv
+from PIL import Image
 from google import genai
 from google.genai.types import GenerateContentConfig, HttpOptions
 from pydantic import BaseModel
 
 # All supported models by the application.
-SUPPORTED_MODEL: type[str] = Literal['gemini-2.5-flash', 'gemini-2.5-pro']
+SUPPORTED_MODEL: type[str] = Literal['gemini-2.5-flash', 'gemini-2.5-flash-image', 'gemini-2.5-pro']
 
 
 class AIClient:
@@ -64,23 +65,32 @@ class AIClient:
 
         return response.text
 
-    async def generate_parsed_response[T: BaseModel](self, prompt: str, schema: Type[T]) -> T:
+    async def generate_parsed_response[T: BaseModel](
+            self, prompt: str, schema: Type[T], image: Optional[Image.Image] = None
+    ) -> T:
         """
-        Generate a parsed response from the given prompt using Pydantic models and validation.
+        Generate a parsed response from the given prompt and optional image using Pydantic models and validation.
         The type variable T must be a Pydantic BaseModel used to parse the response.
 
         :param prompt: Prompt to the AI model.
         :type prompt: str
         :param schema: Pydantic model to use for parsing the response.
         :type schema: Type[T]
+        :param image: Optional image to be included in the prompt.
+        :type image: Optional[Image.Image]
         :return: Parsed response as the Pydantic model instance.
         :rtype: T
 
         :raises ValueError: If the response is not a parsed response, or is None.
         """
+        if image is None:
+            contents = [prompt]
+        else:
+            contents = [prompt, image]
+
         response = await self._google_client.aio.models.generate_content(
             model=self.model_name,
-            contents=prompt,
+            contents=contents,
             config=GenerateContentConfig(
                 system_instruction=self.system_instruction, response_mime_type='application/json',
                 response_schema=schema
