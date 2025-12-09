@@ -4,6 +4,8 @@ import streamlit as st
 from PIL import Image, ImageOps
 from rembg import remove
 
+from frontend.middleware import styles
+
 
 def add_border(img, border=1, color="black"):
     return ImageOps.expand(img, border=border, fill=color)
@@ -40,32 +42,11 @@ def place_image(product, canvas_size=200, border_width=1):
     return outputs
 
 
+st.markdown(styles.TEXT_CSS, unsafe_allow_html=True)
+
 st.markdown(
     """
     <style>
-
-        .stApp {
-            background-color: #FFFFFF;
-        }
-
-        h1, h2, h3, h4, h5, p, div, label, span {
-            font-family: 'Helvetica Nueue', Arial, Helvetica, sans-serif;
-            color: #f1a604;
-        }
-
-        h1 {
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        h3 {
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #FCA311;
-        }
-
         .stTextArea textarea {
             color: #b9c1e8;
             border: 2px solid #E5E5E5;

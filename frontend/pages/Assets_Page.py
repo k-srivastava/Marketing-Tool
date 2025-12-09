@@ -1,5 +1,7 @@
 import streamlit as st
 
+from frontend.middleware import styles
+
 st.set_page_config(page_title='Asset Manager', initial_sidebar_state='collapsed')
 
 if 'hero_image' not in st.session_state:
@@ -11,31 +13,11 @@ if 'logo_image' not in st.session_state:
 if 'support_images' not in st.session_state:
     st.session_state['support_images'] = []
 
+st.markdown(styles.TEXT_CSS, unsafe_allow_html=True)
+
 st.markdown(
     """
     <style>
-        .stApp {
-            background-color: #FFFFFF;
-        }
-
-        h1, h2, h3, h4, h5, p, div, label, span {
-            font-family: 'Helvetica Nueue', Arial, Helvetica, sans-serif;
-            color: #14213D;
-        }
-
-        h1 {
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        h3 {
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #FCA311;
-        }
-
         .stTextArea textarea {
             color: #14213D;
             border: 2px solid #E5E5E5;
@@ -156,15 +138,6 @@ with right:
                     st.session_state.extra_imgs.append(file)
                 else:
                     st.error("You can only upload 2 images max.")
-
-
-
-
-
-
-
-
-
 
 st.divider()
 

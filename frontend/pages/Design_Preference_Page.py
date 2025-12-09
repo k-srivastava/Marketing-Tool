@@ -1,6 +1,8 @@
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 
+from frontend.middleware import styles
+
 st.set_page_config(page_title='Design Preferences', layout='wide', initial_sidebar_state='collapsed')
 
 if 'page' not in st.session_state:
@@ -29,27 +31,11 @@ options_text = [
     ['Top-Left', 'Top-Right', 'Bottom-Left', 'Bottom-Right']
 ]
 
+st.markdown(styles.TEXT_CSS, unsafe_allow_html=True)
+
 st.markdown(
     """
     <style>
-        h1, h2, h3, h4, h5, p, div, label, span {
-            font-family: 'Helvetica Nueue', Arial, Helvetica, sans-serif;
-            color: #14213D;
-        }
-
-        h1 {
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        h3 {
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #FCA311;
-        }
-
         div.stButton > button {
             font-size: 16px;
             font-weight: 600;
