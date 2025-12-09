@@ -101,3 +101,48 @@ class AIClient:
             raise ValueError('Response is empty.')
 
         return response.parsed
+
+    async def generate_image_response(self, prompt: str, image: Optional[Image.Image]) -> tuple[str, Image.Image]:
+        """
+        Asynchronously generates a text and image response based on the given prompt and optional input image.
+        This method uses a specific model ("gemini-2.5-flash-image") to generate content.
+        If the specified model is not used or no image is generated in the response, appropriate errors
+        will be raised.
+
+        :param prompt: The input textual prompt to guide the content generation process.
+        :type prompt: str
+        :param image: An optional input image to refine or complement the content generation.
+        :type image: Optional[Image.Image]
+        :return: A tuple containing the generated text and the generated image.
+        :rtype: tuple[str, Image.Image]
+
+        :raises ValueError: If the model is not "gemini-2.5-flash-image" or if no image is generated in the response.
+        """
+        if self.model_name != 'gemini-2.5-flash-image':
+            raise ValueError('Image generation is only supported for the gemini-2.5-flash-image model.')
+
+        if image is None:
+            contents = [prompt]
+        else:
+            contents = [prompt, image]
+
+        response = await self._google_client.aio.models.generate_content(
+            model=self.model_name,
+            contents=contents,
+            config=GenerateContentConfig(system_instruction=self.system_instruction)
+        )
+
+        text = ''
+        image: Optional[Image.Image] = None
+
+        for part in response.parts:
+            if part.text:
+                text += f'{part.text}\n'
+
+            elif response_image := part.as_image():
+                image = response_image
+
+        if image is None:
+            raise ValueError('Response image is empty.')
+
+        return text, image
