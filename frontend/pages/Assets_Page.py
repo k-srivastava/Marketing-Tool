@@ -1,8 +1,14 @@
+from io import BytesIO
+
+import rembg
 import streamlit as st
+from PIL import Image
 
 from frontend.middleware import styles
 
 st.set_page_config(page_title='Asset Manager', initial_sidebar_state='collapsed')
+
+MAX_SUPPORT_IMAGES = 2
 
 if 'hero_image' not in st.session_state:
     st.session_state['hero_image'] = None
@@ -52,7 +58,6 @@ st.markdown(
 
         div.stButton > button[kind="primary"] {
             font-weight: 800;
-            padding: 1rem;
             transition: all 0.2s ease-in-out;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -106,38 +111,42 @@ with left:
     st.markdown('##### Hero Image')
     st.caption('Main representation of your product as the hero image in the final poster.')
 
-    hero_image_raw = st.file_uploader(
-        'Product Hero Image', type=['png', 'jpg'], accept_multiple_files=False, label_visibility='collapsed'
-    )
+    hero_image_raw = st.file_uploader('Product Hero Image', type=['png', 'jpg'], label_visibility='collapsed')
     if hero_image_raw is not None:
-        st.session_state['hero_image'] = hero_image_raw
+        hero_image_raw.seek(0)
+        hero_image = Image.open(BytesIO(rembg.remove(hero_image_raw.read())))
+
+        st.session_state['hero_image'] = hero_image
 
 with middle:
     st.markdown('##### Brand Logo')
     st.caption('Your brand logo (transparent background is recommended).')
 
-    logo_image_raw = st.file_uploader(
-        'Brand Hero', type=['png', 'jpg'], accept_multiple_files=False
-    )
+    logo_image_raw = st.file_uploader('Brand Hero', type=['png', 'jpg'], label_visibility='collapsed')
     if logo_image_raw is not None:
-        st.session_state['logo_image'] = logo_image_raw
+        logo_image_raw.seek(0)
+        logo_image = Image.open(BytesIO(rembg.remove(logo_image_raw.read())))
+
+        st.session_state['logo_image'] = logo_image
 
 with right:
     st.markdown('##### Support Images')
     st.caption('Additional angles or context shots to be optionally included.')
-    if "extra_imgs" not in st.session_state:
-        st.session_state.extra_imgs = []
 
     uploaded = st.file_uploader(
-        "Upload support images", type=["jpg", "png"], accept_multiple_files=True,
-        disabled=len(st.session_state.extra_imgs) >= 2)
+        'Support Images', type=['png', 'jpg'], accept_multiple_files=True, label_visibility='collapsed',
+        disabled=len(st.session_state['support_images']) >= MAX_SUPPORT_IMAGES
+    )
+
     if uploaded:
         for file in uploaded:
-            if file.name not in [f.name for f in st.session_state.extra_imgs]:
-                if len(st.session_state.extra_imgs) < 2:
-                    st.session_state.extra_imgs.append(file)
+            support_image = Image.open(BytesIO(file.read()))
+
+            if support_image not in st.session_state['support_images']:
+                if len(st.session_state['support_images']) < MAX_SUPPORT_IMAGES:
+                    st.session_state['support_images'].append(support_image)
                 else:
-                    st.error("You can only upload 2 images max.")
+                    st.error(f'You can only upload up to {MAX_SUPPORT_IMAGES} additional support images.')
 
 st.divider()
 
@@ -145,4 +154,4 @@ _, middle, _ = st.columns([1, 2, 1])
 with middle:
     submit = st.button('Start Generation', type='primary', use_container_width=True)
     if submit:
-        st.switch_page("pages/Hero_Layout.py")
+        st.switch_page('pages/Hero_Layout.py')
