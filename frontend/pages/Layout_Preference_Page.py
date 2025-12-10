@@ -70,8 +70,10 @@ with st.container():
                         st.image(option_thumbnails[i])
 
                     if st.button(
-                            layouts.get_thumbnail_position_name(i), key=f'option_{st.session_state["layout_idx"]}_{i}',
-                            type='primary', use_container_width=True
+                            'Slot Occupied' if i in st.session_state['choices'] else
+                            layouts.get_thumbnail_position_name(i),
+                            key=f'option_{st.session_state["layout_idx"]}_{i}', type='primary',
+                            use_container_width=True, disabled=i in st.session_state['choices']
                     ):
                         st.session_state['choices'][st.session_state['layout_idx']] = i
                         st.rerun()
