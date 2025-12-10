@@ -222,4 +222,4 @@ st.divider()
 _, mid, _ = st.columns([1, 2, 1])
 with mid:
     if st.button("Start Designing", use_container_width=True):
-        st.switch_page("pages/Layout_Preference_Page.py")
+        st.switch_page("pages/Assets_Page.py")
