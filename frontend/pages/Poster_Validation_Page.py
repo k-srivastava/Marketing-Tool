@@ -80,10 +80,10 @@ with st.container():
     poster_col, comments_col = st.columns([2.5, 1], gap='large')
 
     with poster_col:
-        hero_image = st.session_state.get('hero_image')
+        raw_poster = st.session_state.get('raw_poster_image')
 
-        if hero_image is not None:
-            st.image(hero_image)
+        if raw_poster is not None:
+            st.image(raw_poster)
         else:
             st.info('No poster generated yet.')
 

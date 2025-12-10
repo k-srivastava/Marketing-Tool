@@ -61,7 +61,7 @@ def create_option_thumbnails(
     :return: List of thumbnail images containing the asset positioned on a canvas with the specified size and colors.
     :rtype: list[Image.Image]
     """
-    positions = _get_relative_positions(asset.size, canvas_size)
+    positions = get_relative_positions(asset.size, canvas_size)
 
     thumbnails: list[Image.Image] = []
     for position in positions:
@@ -71,6 +71,35 @@ def create_option_thumbnails(
         thumbnails.append(bordered_canvas)
 
     return thumbnails
+
+
+def get_relative_positions(asset_size: tuple[int, int], canvas_size: int) -> list[tuple[int, int]]:
+    """
+    Get the relative positions of the asset on a canvas.
+
+    :param asset_size: Size of the asset in pixels.
+    :type asset_size: tuple[int, int]
+    :param canvas_size: Size of the canvas in pixels.
+    :type canvas_size: int
+
+    :return: Positions of the asset on the canvas.
+    :rtype: tuple[int, int]
+    """
+    asset_width, asset_height = asset_size
+
+    return [
+        (0, 0),
+        ((canvas_size - asset_width) // 2, 0),
+        (canvas_size - asset_width, 0),
+
+        (0, (canvas_size - asset_height) // 2),
+        ((canvas_size - asset_width) // 2, (canvas_size - asset_height) // 2),
+        (canvas_size - asset_width, (canvas_size - asset_height) // 2),
+
+        (0, canvas_size - asset_height),
+        ((canvas_size - asset_width) // 2, canvas_size - asset_height),
+        (canvas_size - asset_width, canvas_size - asset_height)
+    ]
 
 
 def get_thumbnail_position_name(idx: int) -> str:
@@ -101,32 +130,3 @@ def get_thumbnail_position_name(idx: int) -> str:
         return 'Bottom Center'
     else:
         return 'Bottom Right'
-
-
-def _get_relative_positions(asset_size: tuple[int, int], canvas_size: int) -> list[tuple[int, int]]:
-    """
-    Get the relative positions of the asset on a canvas.
-
-    :param asset_size: Size of the asset in pixels.
-    :type asset_size: tuple[int, int]
-    :param canvas_size: Size of the canvas in pixels.
-    :type canvas_size: int
-
-    :return: Positions of the asset on the canvas.
-    :rtype: tuple[int, int]
-    """
-    asset_width, asset_height = asset_size
-
-    return [
-        (0, 0),
-        ((canvas_size - asset_width) // 2, 0),
-        (canvas_size - asset_width, 0),
-
-        (0, (canvas_size - asset_height) // 2),
-        ((canvas_size - asset_width) // 2, (canvas_size - asset_height) // 2),
-        (canvas_size - asset_width, (canvas_size - asset_height) // 2),
-
-        (0, canvas_size - asset_height),
-        ((canvas_size - asset_width) // 2, canvas_size - asset_height),
-        (canvas_size - asset_width, canvas_size - asset_height)
-    ]

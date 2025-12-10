@@ -8,16 +8,17 @@ from frontend.middleware import styles
 
 st.set_page_config(page_title='Asset Manager', initial_sidebar_state='collapsed')
 
-MAX_SUPPORT_IMAGES = 2
-
 if 'hero_image' not in st.session_state:
     st.session_state['hero_image'] = None
 
 if 'logo_image' not in st.session_state:
     st.session_state['logo_image'] = None
 
-if 'support_images' not in st.session_state:
-    st.session_state['support_images'] = []
+if 'support_image_1' not in st.session_state:
+    st.session_state['support_image_1'] = None
+
+if 'support_image_2' not in st.session_state:
+    st.session_state['support_image_2'] = None
 
 st.markdown(styles.TEXT_CSS, unsafe_allow_html=True)
 
@@ -117,6 +118,7 @@ with left:
         hero_image = Image.open(BytesIO(rembg.remove(hero_image_raw.read())))
 
         st.session_state['hero_image'] = hero_image
+        st.image(hero_image, caption='Hero Image Preview')
 
 with middle:
     st.markdown('##### Brand Logo')
@@ -128,6 +130,7 @@ with middle:
         logo_image = Image.open(BytesIO(rembg.remove(logo_image_raw.read())))
 
         st.session_state['logo_image'] = logo_image
+        st.image(logo_image, caption='Logo Image Preview')
 
 with right:
     st.markdown('##### Support Images')
@@ -135,18 +138,22 @@ with right:
 
     uploaded = st.file_uploader(
         'Support Images', type=['png', 'jpg'], accept_multiple_files=True, label_visibility='collapsed',
-        disabled=len(st.session_state['support_images']) >= MAX_SUPPORT_IMAGES
+        disabled=st.session_state['support_image_1'] is not None and st.session_state['support_image_2'] is not None
     )
 
     if uploaded:
         for file in uploaded:
-            support_image = Image.open(BytesIO(file.read()))
+            file.seek(0)
 
-            if support_image not in st.session_state['support_images']:
-                if len(st.session_state['support_images']) < MAX_SUPPORT_IMAGES:
-                    st.session_state['support_images'].append(support_image)
-                else:
-                    st.error(f'You can only upload up to {MAX_SUPPORT_IMAGES} additional support images.')
+            if st.session_state['support_image_1'] is None:
+                support_image_1 = Image.open(BytesIO(rembg.remove(file.read())))
+                st.session_state['support_image_1'] = support_image_1
+                st.image(support_image_1, caption='Support Image Preview (1)')
+
+            elif st.session_state['support_image_2'] is None:
+                support_image_2 = Image.open(BytesIO(rembg.remove(file.read())))
+                st.session_state['support_image_2'] = support_image_2
+                st.image(support_image_2, caption='Support Image Preview (2)')
 
 st.divider()
 
@@ -154,4 +161,4 @@ _, middle, _ = st.columns([1, 2, 1])
 with middle:
     submit = st.button('Start Generation', type='primary', use_container_width=True)
     if submit:
-        st.switch_page('pages/Hero_Layout.py')
+        st.switch_page('pages/Layout_Preference_Page.py')

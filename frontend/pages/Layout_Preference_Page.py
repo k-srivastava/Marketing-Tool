@@ -1,6 +1,5 @@
 from typing import Optional
 
-import rembg
 import streamlit as st
 from PIL import Image
 from streamlit.delta_generator import DeltaGenerator
@@ -9,7 +8,7 @@ from frontend.middleware import layouts, styles
 
 st.set_page_config(page_title='Layout Preferences', layout='wide', initial_sidebar_state='collapsed')
 
-_num_support_images = len(st.session_state.get('support_images', []))
+_num_support_images = int('support_image_1' in st.session_state) + int('support_image_2' in st.session_state)
 
 PAGES = 2 + _num_support_images
 OPTIONS_PER_PAGE = 9
@@ -22,6 +21,9 @@ if 'choices' not in st.session_state:
 
 if 'layout_finalized' not in st.session_state:
     st.session_state['layout_finalized'] = False
+
+if 'raw_poster_image' not in st.session_state:
+    st.session_state['raw_poster_image'] = None
 
 page_labels = layouts.generate_page_labels(_num_support_images)
 options_text = layouts.generate_page_headings(_num_support_images)
@@ -86,13 +88,15 @@ with st.container():
         elif page == 1:
             render_option(st.session_state.get('logo_image'))
         elif page == 2:
-            render_option(rembg.remove(st.session_state.get('support_images')[0]))
+            render_option(st.session_state.get('support_image_1'))
         else:
-            render_option(rembg.remove(st.session_state.get('support_images')[1]))
+            render_option(st.session_state.get('support_image_2'))
 
     with left:
         def go_to_previous_page():
-            st.session_state['layout_idx'] -= 1
+            if st.session_state['layout_idx'] > 0:
+                st.session_state['layout_idx'] -= 1
+                st.info(st.session_state['layout_idx'])
 
 
         if st.session_state['layout_idx'] > 0:
@@ -102,7 +106,8 @@ with st.container():
 
     with right:
         def go_to_next_page():
-            st.session_state['layout_idx'] += 1
+            if st.session_state['layout_idx'] < PAGES:
+                st.session_state['layout_idx'] += 1
 
 
         def finalize():
@@ -113,3 +118,53 @@ with st.container():
             st.button('Next ->', key='next_btn', help='Next', on_click=go_to_next_page, use_container_width=True)
         else:
             st.button('Finish ✔', key='finish_btn', help='Finalize', on_click=finalize, use_container_width=True)
+
+with st.container():
+    st.divider()
+
+    st.subheader('Current Poster Preview')
+
+    CANVAS_SIZE = 500
+    canvas = Image.new('RGBA', (CANVAS_SIZE, CANVAS_SIZE), '#E5E5E5')
+
+
+    def overlay_asset(asset: Image.Image, choice_idx: int, canvas_size: int):
+        if asset is None or choice_idx is None:
+            return
+
+        asset_copy = asset.copy()
+        asset_copy.thumbnail((canvas_size // 2, canvas_size // 2))
+
+        positions = layouts.get_relative_positions(asset_copy.size, canvas_size)
+        if 0 <= choice_idx < len(positions):
+            position = positions[choice_idx]
+            canvas.paste(asset_copy, position, asset_copy)
+
+
+    for idx, choice in enumerate(st.session_state['choices']):
+        if choice is None:
+            continue
+
+        if idx == 0:
+            overlay_asset(st.session_state.get('hero_image'), choice, CANVAS_SIZE)
+
+        elif idx == 1:
+            overlay_asset(st.session_state.get('logo_image'), choice, CANVAS_SIZE)
+
+        elif idx == 2:
+            overlay_asset(st.session_state.get('support_image_1'), choice, CANVAS_SIZE)
+
+        else:
+            overlay_asset(st.session_state.get('support_image_2'), choice, CANVAS_SIZE)
+
+    _, middle, _ = st.columns([1, 2, 1])
+    with middle:
+        st.image(canvas, caption='Poster Preview', use_container_width=True)
+
+    if st.session_state['layout_finalized']:
+        st.divider()
+        st.info('Your layout preferences have been saved.')
+
+        st.session_state['raw_poster_image'] = canvas
+        if st.button('Finalize & Generate', type='primary', use_container_width=True):
+            st.switch_page('pages/Poster_Validation_Page.py')
