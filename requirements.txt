@@ -1,4 +1,8 @@
+pillow
+streamlit
 protobuf
 pydantic
 google-genai
 python-dotenv
+rembg
+onnxruntime
