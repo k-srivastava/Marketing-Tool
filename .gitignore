@@ -163,4 +163,5 @@ cython_debug/
 .idea/
 
 # Hide custom prompts
+assets/images
 assets/prompts
