@@ -4,9 +4,10 @@ import rembg
 import streamlit as st
 from PIL import Image
 
-from frontend.middleware import styles
-
 st.set_page_config(page_title='Asset Manager', initial_sidebar_state='collapsed')
+
+if 'product_description' not in st.session_state:
+    st.session_state['product_description'] = None
 
 if 'hero_image' not in st.session_state:
     st.session_state['hero_image'] = None
@@ -20,11 +21,31 @@ if 'support_image_1' not in st.session_state:
 if 'support_image_2' not in st.session_state:
     st.session_state['support_image_2'] = None
 
-st.markdown(styles.TEXT_CSS, unsafe_allow_html=True)
-
 st.markdown(
     """
     <style>
+        h1, h2, h3, h4, h5, p, div, label, span {
+            font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            color: #14213D;
+        }
+
+        h1 {
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FCA311;
+        }
+
+        .stTextArea {
+            padding-top: 10px;
+        }
+
         .stTextArea textarea {
             color: #14213D;
             border: 2px solid #E5E5E5;
@@ -103,6 +124,8 @@ with st.container():
         label_visibility='collapsed'
     )
 
+    st.session_state['product_description'] = product_description_raw.strip()
+
 st.divider()
 
 st.subheader('Product Assets')
@@ -161,4 +184,4 @@ _, middle, _ = st.columns([1, 2, 1])
 with middle:
     submit = st.button('Start Generation', type='primary', use_container_width=True)
     if submit:
-        st.switch_page('pages/Layout_Preference_Page.py')
+        st.switch_page('pages/Design_Preference_Page.py')
