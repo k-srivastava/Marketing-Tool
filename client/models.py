@@ -1,6 +1,8 @@
 """
 Models for responses from the AI client.
 """
+from typing import Tuple
+
 from pydantic import BaseModel
 
 
@@ -24,3 +26,25 @@ class ProductInformation(BaseModel):
     tagline: str
     brand_name: str
     features: list[str]
+
+
+class ColorCurator(BaseModel):
+    """
+    Represents color curation recommendation for the product.
+    This class is used to store and manage color curation recommendations.
+    :ivar color_scheme_1 : colour schemes in a tuple consisting of primary and secondary colour hex codes in strings
+    :type color_scheme_1: Tuple[str, str]
+    :ivar color_scheme_2 : colour schemes in a tuple consisting of primary and secondary colour hex codes in strings
+    :type color_scheme_2: Tuple[str, str]
+    :ivar color_scheme_3 : colour schemes in a tuple consisting of primary and secondary colour hex codes in strings
+    :type color_scheme_3: Tuple[str, str]
+    :ivar color_scheme_4 : colour schemes in a tuple consisting of primary and secondary colour hex codes in strings
+    :type color_scheme_4: Tuple[str, str]
+
+
+
+    """
+    color_scheme_1: Tuple[str, str]
+    color_scheme_2: Tuple[str, str]
+    color_scheme_3: Tuple[str, str]
+    color_scheme_4: Tuple[str, str]
