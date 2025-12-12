@@ -1,7 +1,6 @@
+import requests
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
-
-from frontend.middleware import styles
 
 st.set_page_config(page_title='Design Preferences', layout='wide', initial_sidebar_state='collapsed')
 
@@ -14,29 +13,117 @@ if 'choices' not in st.session_state:
 if 'finalized' not in st.session_state:
     st.session_state['finalized'] = False
 
+if 'font_list' not in st.session_state:
+    st.session_state['font_list'] = None
+
+if 'color_scheme' not in st.session_state:
+    st.session_state['color_scheme'] = None
+
+if 'product_info' not in st.session_state:
+    st.session_state['product_info'] = None
+
 PAGES = 4
 OPTIONS_PER_PAGE = 4
 
 page_labels = [
-    'Design Type: Font',
-    'Design Type: Color Palette',
-    'Design Type: Image',
+    'Font',
+    'Color Palette',
+    'Hero Feature',
     'Design Type: Logo'
 ]
 
+if st.session_state['font_list'] is None:
+    font_list = requests.get(
+        'http://127.0.0.1:8000/font',
+        params={'description': st.session_state['product_description']}
+    ).json()
+
+    st.session_state['font_list'] = font_list
+
+if st.session_state['color_scheme'] is None:
+    color_scheme = requests.get(
+        'http://127.0.0.1:8000/color',
+        params={'description': st.session_state['product_description']}
+    ).json()
+
+    st.session_state['color_scheme'] = color_scheme
+
+if st.session_state['product_info'] is None:
+    product_info = requests.get(
+        'http://127.0.0.1:8000/info',
+        params={'description': st.session_state['product_description']}
+    ).json()
+
+    st.session_state['product_info'] = product_info
+
+font_families = [
+    st.session_state['font_list']['font_1'],
+    st.session_state['font_list']['font_2'],
+    st.session_state['font_list']['font_3'],
+    st.session_state['font_list']['font_4']
+]
+
+color_schemes = [
+    st.session_state['color_scheme']['color_scheme_1'],
+    st.session_state['color_scheme']['color_scheme_2'],
+    st.session_state['color_scheme']['color_scheme_3'],
+    st.session_state['color_scheme']['color_scheme_4']
+]
+
+product_info = st.session_state['product_info']['features']
+
 options_text = [
-    ['Helvetica Nueue', 'Times New Roman', 'Arial', 'Comic Sans'],
-    ['Blues', 'Red', 'Oranges', 'Grays'],
-    ['Hero', 'Logo', 'Support (1)', 'Support (2)'],
+    font_families,
+    ['', '', '', ''],
+    product_info,
     ['Top-Left', 'Top-Right', 'Bottom-Left', 'Bottom-Right']
 ]
 
-st.markdown(styles.TEXT_CSS, unsafe_allow_html=True)
+
+def style_button_font(key: str, font_name: str):
+    st.markdown(
+        f"""
+        <style>
+            .st-key-{key} button > div {{
+                font-family: '{font_name}', sans-serif !important;
+            }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+st.markdown(
+    f"""{st.session_state['font_list']['font_1_link']}
+{st.session_state['font_list']['font_2_link']}
+{st.session_state['font_list']['font_3_link']}
+{st.session_state['font_list']['font_4_link']}""",
+    unsafe_allow_html=True
+)
 
 st.markdown(
     """
     <style>
+        h1, h2, h3, h4, h5, p, div, label, span {
+            font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            color: #14213D;
+        }
+
+        h1 {
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        h3 {
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FCA311;
+        }
+
         div.stButton > button {
+            font-family: 'Playfair Display', sans-serif !important;
             font-size: 16px;
             font-weight: 600;
             width: 100%;
@@ -130,7 +217,25 @@ with st.container():
             key = f'option_{page}_{idx}'
             button_type = 'primary' if selected == idx else 'secondary'
 
+            if page == 0:
+                font_name = font_families[idx]
+                style_button_font(key, font_name)
+
             with col:
+                if page == 1:
+                    st.markdown(
+                        f"""
+                        <style>
+                            .st-key-{key} button > div {{
+                                height: 100%;
+                                border-radius: 8px;
+                                background: linear-gradient(90deg, {color_schemes[idx][0]}, {color_schemes[idx][1]});
+                            }}
+                        </style>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
                 if st.button(button_label, key=key, type=button_type, use_container_width=True):
                     st.session_state['choices'][page] = idx
                     st.rerun()
