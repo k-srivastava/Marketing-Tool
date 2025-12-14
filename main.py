@@ -1,6 +1,8 @@
+from io import BytesIO
 from pathlib import Path
 
-from fastapi import FastAPI
+from PIL import Image
+from fastapi import FastAPI, UploadFile, File, Form, Response, HTTPException
 
 from client.ai import AIClient
 from client.models import FontRecommendation, ProductInformation, ColorCurator
@@ -68,3 +70,48 @@ async def get_color_scheme(description: str, use_ai: bool = False) -> ColorCurat
         color_scheme_3=['#2F5F4A', '#E9DDC7'],
         color_scheme_4=['#0D4C3A', '#DDE3E1']
     )
+
+
+@app.post('/generate')
+async def generate_final_poster(
+        name: str = Form(...),
+        tagline: str = Form(...),
+        brand_name: str = Form(...),
+        font: str = Form(...),
+        primary_color: str = Form(...),
+        secondary_color: str = Form(...),
+        hero_feature: str = Form(...),
+        size: str = Form(...),
+        raw_poster: UploadFile = File(...),
+        comments: str = Form(''),
+        use_ai: bool = Form(False)
+) -> Response:
+    try:
+        uploaded_bytes = await raw_poster.read()
+        img = Image.open(BytesIO(uploaded_bytes))
+        img.load()
+    except Exception:
+        raise HTTPException(status_code=400, detail='Invalid image uploaded')
+
+    if use_ai:
+        message = (
+            f'Product Name: "{name}", Tagline: "{tagline}", Brand Name: "{brand_name}", Font: "{font}", '
+            f'Primary Color (Hex): "{primary_color}", Secondary Color (Hex): "{secondary_color}", '
+            f'Hero Feature (Must be included): "{hero_feature}", Size: "{size}", Comments: "{comments}"'
+        )
+
+        prompt = repository.load_prompt('image-generation')
+        client = AIClient(prompt.to_system_instruction(), model_name='gemini-2.5-flash-image')
+
+        _text, generated_image = await client.generate_image_response(message, img)
+        generated_image.save('assets/images/generated.png')
+
+        with open('assets/images/generated.png', 'rb') as f:
+            out = f.read()
+
+        return Response(out, media_type='image/png', headers={'Cache-Control': 'no-store'})
+
+    with open('assets/images/generated.png', 'rb') as f:
+        out = f.read()
+
+    return Response(out, media_type='image/png', headers={'Cache-Control': 'no-store'})
