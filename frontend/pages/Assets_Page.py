@@ -6,20 +6,75 @@ from PIL import Image
 
 st.set_page_config(page_title='Asset Manager', initial_sidebar_state='collapsed')
 
-if 'product_description' not in st.session_state:
-    st.session_state['product_description'] = None
+if 'poster' not in st.session_state:
+    st.session_state['poster'] = {
+        'metadata': {
+            'use_ai': True
+        },
 
-if 'hero_image' not in st.session_state:
-    st.session_state['hero_image'] = None
+        'client': {
+            # Information Schema
+            # {
+            #     'name': None,
+            #     'tagline': None,
+            #     'brand_name': None,
+            #     'features': [None, None, None, None]
+            # }
+            'information': None,
 
-if 'logo_image' not in st.session_state:
-    st.session_state['logo_image'] = None
+            # Fonts Schema
+            # {
+            #     'font_1': None,
+            #     'font_1_link': None,
+            #     'font_2': None,
+            #     'font_2_link': None,
+            #     'font_3': None,
+            #     'font_3_link': None,
+            #     'font_4': None,
+            #     'font_4_link': None
+            # }
+            'fonts': None,
 
-if 'support_image_1' not in st.session_state:
-    st.session_state['support_image_1'] = None
+            # Colors Schema
+            # {
+            #     'color_scheme_1': [None, None],
+            #     'color_scheme_2': [None, None],
+            #     'color_scheme_3': [None, None],
+            #     'color_scheme_4': [None, None]
+            # }
+            'colors': None
+        },
 
-if 'support_image_2' not in st.session_state:
-    st.session_state['support_image_2'] = None
+        'assets': {
+            'product_description': None,
+            'hero_image': None,
+            'logo_image': None,
+            'support_images': [None, None],
+        },
+
+        'design': {
+            'page': 0,
+            'choices': {
+                'font': None,
+                'font_link': None,
+                'color_scheme': [None, None],
+                'hero_feature': None,
+                'size': None,
+            },
+            'finalized': False,
+        },
+
+        'layout': {
+            'page': 0,
+            'choices': [],
+            'finalized': False,
+        },
+
+        'preview': {
+            'raw_poster_image': None,
+            'final_poster_image': None
+        }
+    }
 
 st.markdown(
     """
@@ -124,7 +179,7 @@ with st.container():
         label_visibility='collapsed'
     )
 
-    st.session_state['product_description'] = product_description_raw.strip()
+    st.session_state['poster']['assets']['product_description'] = product_description_raw.strip()
 
 st.divider()
 
@@ -140,7 +195,7 @@ with left:
         hero_image_raw.seek(0)
         hero_image = Image.open(BytesIO(rembg.remove(hero_image_raw.read())))
 
-        st.session_state['hero_image'] = hero_image
+        st.session_state['poster']['assets']['hero_image'] = hero_image
         st.image(hero_image, caption='Hero Image Preview')
 
 with middle:
@@ -152,7 +207,7 @@ with middle:
         logo_image_raw.seek(0)
         logo_image = Image.open(BytesIO(rembg.remove(logo_image_raw.read())))
 
-        st.session_state['logo_image'] = logo_image
+        st.session_state['poster']['assets']['logo_image'] = logo_image
         st.image(logo_image, caption='Logo Image Preview')
 
 with right:
@@ -161,21 +216,22 @@ with right:
 
     uploaded = st.file_uploader(
         'Support Images', type=['png', 'jpg'], accept_multiple_files=True, label_visibility='collapsed',
-        disabled=st.session_state['support_image_1'] is not None and st.session_state['support_image_2'] is not None
+        # disabled=st.session_state['poster']['assets']['support_images'][0] is not None and
+        #          st.session_state['poster']['assets']['support_images'][1] is not None
     )
 
     if uploaded:
         for file in uploaded:
             file.seek(0)
 
-            if st.session_state['support_image_1'] is None:
+            if st.session_state['poster']['assets']['support_images'][0] is None:
                 support_image_1 = Image.open(BytesIO(rembg.remove(file.read())))
-                st.session_state['support_image_1'] = support_image_1
+                st.session_state['poster']['assets']['support_images'][0] = support_image_1
                 st.image(support_image_1, caption='Support Image Preview (1)')
 
-            elif st.session_state['support_image_2'] is None:
+            elif st.session_state['poster']['assets']['support_images'][1] is None:
                 support_image_2 = Image.open(BytesIO(rembg.remove(file.read())))
-                st.session_state['support_image_2'] = support_image_2
+                st.session_state['poster']['assets']['support_images'][1] = support_image_2
                 st.image(support_image_2, caption='Support Image Preview (2)')
 
 st.divider()

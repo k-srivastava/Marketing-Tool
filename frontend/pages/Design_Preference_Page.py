@@ -4,24 +4,6 @@ from streamlit.delta_generator import DeltaGenerator
 
 st.set_page_config(page_title='Design Preferences', layout='wide', initial_sidebar_state='collapsed')
 
-if 'page' not in st.session_state:
-    st.session_state['page'] = 0
-
-if 'choices' not in st.session_state:
-    st.session_state['choices'] = [None, None, None, None]
-
-if 'finalized' not in st.session_state:
-    st.session_state['finalized'] = False
-
-if 'font_list' not in st.session_state:
-    st.session_state['font_list'] = None
-
-if 'color_scheme' not in st.session_state:
-    st.session_state['color_scheme'] = None
-
-if 'product_info' not in st.session_state:
-    st.session_state['product_info'] = None
-
 PAGES = 4
 OPTIONS_PER_PAGE = 4
 
@@ -29,75 +11,83 @@ page_labels = [
     'Font',
     'Color Palette',
     'Hero Feature',
-    'Design Type: Logo'
+    'Poster Size'
 ]
 
-if st.session_state['font_list'] is None:
-    font_list = requests.get(
-        'http://127.0.0.1:8000/font',
-        params={'description': st.session_state['product_description']}
-    ).json()
+if 'poster' not in st.session_state:
+    st.switch_page('pages/Assets_Page.py')
 
-    st.session_state['font_list'] = font_list
-
-if st.session_state['color_scheme'] is None:
-    color_scheme = requests.get(
-        'http://127.0.0.1:8000/color',
-        params={'description': st.session_state['product_description']}
-    ).json()
-
-    st.session_state['color_scheme'] = color_scheme
-
-if st.session_state['product_info'] is None:
-    product_info = requests.get(
+if st.session_state['poster']['client']['information'] is None:
+    features = requests.get(
         'http://127.0.0.1:8000/info',
-        params={'description': st.session_state['product_description']}
+        params={
+            'description': st.session_state['poster']['assets']['product_description'],
+            'use_ai': st.session_state['poster']['metadata']['use_ai']
+        }
     ).json()
 
-    st.session_state['product_info'] = product_info
+    st.session_state['poster']['client']['information'] = features
 
-font_families = [
-    st.session_state['font_list']['font_1'],
-    st.session_state['font_list']['font_2'],
-    st.session_state['font_list']['font_3'],
-    st.session_state['font_list']['font_4']
+if st.session_state['poster']['client']['fonts'] is None:
+    fonts = requests.get(
+        'http://127.0.0.1:8000/font',
+        params={
+            'description': st.session_state['poster']['assets']['product_description'],
+            'use_ai': st.session_state['poster']['metadata']['use_ai']
+        }
+    ).json()
+
+    st.session_state['poster']['client']['fonts'] = fonts
+
+if st.session_state['poster']['client']['colors'] is None:
+    colors = requests.get(
+        'http://127.0.0.1:8000/color',
+        params={
+            'description': st.session_state['poster']['assets']['product_description'],
+            'use_ai': st.session_state['poster']['metadata']['use_ai']
+        }
+    ).json()
+
+    st.session_state['poster']['client']['colors'] = colors
+
+font_faces = [
+    st.session_state['poster']['client']['fonts']['font_1'],
+    st.session_state['poster']['client']['fonts']['font_2'],
+    st.session_state['poster']['client']['fonts']['font_3'],
+    st.session_state['poster']['client']['fonts']['font_4']
+]
+
+font_links = [
+    st.session_state['poster']['client']['fonts']['font_1_link'],
+    st.session_state['poster']['client']['fonts']['font_2_link'],
+    st.session_state['poster']['client']['fonts']['font_3_link'],
+    st.session_state['poster']['client']['fonts']['font_4_link']
 ]
 
 color_schemes = [
-    st.session_state['color_scheme']['color_scheme_1'],
-    st.session_state['color_scheme']['color_scheme_2'],
-    st.session_state['color_scheme']['color_scheme_3'],
-    st.session_state['color_scheme']['color_scheme_4']
+    st.session_state['poster']['client']['colors']['color_scheme_1'],
+    st.session_state['poster']['client']['colors']['color_scheme_2'],
+    st.session_state['poster']['client']['colors']['color_scheme_3'],
+    st.session_state['poster']['client']['colors']['color_scheme_4']
 ]
 
-product_info = st.session_state['product_info']['features']
+features = st.session_state['poster']['client']['information']['features']
+
+sizes = ['1:1', '2:1', '16:9', '9:16']
 
 options_text = [
-    font_families,
+    font_faces,
     ['', '', '', ''],
-    product_info,
-    ['Top-Left', 'Top-Right', 'Bottom-Left', 'Bottom-Right']
+    features,
+    sizes
 ]
-
-
-def style_button_font(key: str, font_name: str):
-    st.markdown(
-        f"""
-        <style>
-            .st-key-{key} button > div {{
-                font-family: '{font_name}', sans-serif !important;
-            }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
 
 
 st.markdown(
-    f"""{st.session_state['font_list']['font_1_link']}
-{st.session_state['font_list']['font_2_link']}
-{st.session_state['font_list']['font_3_link']}
-{st.session_state['font_list']['font_4_link']}""",
+    f"""{st.session_state['poster']['client']['fonts']['font_1_link']}
+{st.session_state['poster']['client']['fonts']['font_2_link']}
+{st.session_state['poster']['client']['fonts']['font_3_link']}
+{st.session_state['poster']['client']['fonts']['font_4_link']}""",
     unsafe_allow_html=True
 )
 
@@ -163,26 +153,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-if st.session_state['choices'][st.session_state['page']] is not None:
-    st.markdown(
-        """
-        <style>
-            div.stButton > button[kind="secondary"] {
-                opacity: 0.6;
-                color: #8D99AE;
-                border-color: #F0F0F0;
-                background: #F0F0F0;
-            }
-
-            div.stButton > button[kind="secondary"]:hover {
-                color: #14213D;
-                border-color: #14213D;
-                background-color: #E5E5E5;
-            }
-        </style>""",
-        unsafe_allow_html=True
-    )
-
 st.markdown(
     """<h1 style="text-align: center;">Design Preference</h1>
     <p style='text-align: center; color: #5D6D7E; font-size: 1.1em;'>Choose your favorite styles from a curated
@@ -197,7 +167,7 @@ with st.container():
 
     with middle:
         st.markdown(
-            f'<h3 style="text-align: center; margin-bottom: 30px;">{page_labels[st.session_state["page"]]}</h3>',
+            f'<h3 style="text-align: center; margin-bottom: 30px;">{page_labels[st.session_state["poster"]["design"]["page"]]}</h3>',
             unsafe_allow_html=True
         )
 
@@ -206,27 +176,34 @@ with st.container():
 
 
         def render_option(col: DeltaGenerator, idx: int):
-            page = st.session_state['page']
-            selected = st.session_state['choices'][page]
+            page_idx = st.session_state['poster']['design']['page']
 
             try:
-                button_label = options_text[page][idx]
+                button_label = options_text[page_idx][idx]
             except IndexError:
                 button_label = f'Option {idx + 1}'
 
-            key = f'option_{page}_{idx}'
-            button_type = 'primary' if selected == idx else 'secondary'
+            if page_idx == 0:
+                selected = st.session_state['poster']['design']['choices']['font'] == font_faces[idx]
 
-            if page == 0:
-                font_name = font_families[idx]
-                style_button_font(key, font_name)
+            elif page_idx == 1:
+                selected = st.session_state['poster']['design']['choices']['color_scheme'] == color_schemes[idx]
+
+            elif page_idx == 2:
+                selected = st.session_state['poster']['design']['choices']['hero_feature'] == features[idx]
+
+            else:
+                selected = st.session_state['poster']['design']['choices']['size'] == sizes[idx]
+
+            button_key = f'option_{page_idx}_{idx}'
+            button_type = 'primary' if selected else 'secondary'
 
             with col:
-                if page == 1:
+                if page_idx == 1:
                     st.markdown(
                         f"""
                         <style>
-                            .st-key-{key} button > div {{
+                            .st-key-{button_key} button > div {{
                                 height: 100%;
                                 border-radius: 8px;
                                 background: linear-gradient(90deg, {color_schemes[idx][0]}, {color_schemes[idx][1]});
@@ -236,8 +213,20 @@ with st.container():
                         unsafe_allow_html=True
                     )
 
-                if st.button(button_label, key=key, type=button_type, use_container_width=True):
-                    st.session_state['choices'][page] = idx
+                if st.button(button_label, key=button_key, type=button_type, use_container_width=True):
+                    if page_idx == 0:
+                        st.session_state['poster']['design']['choices']['font'] = font_faces[idx]
+                        st.session_state['poster']['design']['choices']['font_link'] = font_links[idx]
+
+                    elif page_idx == 1:
+                        st.session_state['poster']['design']['choices']['color_scheme'] = color_schemes[idx]
+
+                    elif page_idx == 2:
+                        st.session_state['poster']['design']['choices']['hero_feature'] = features[idx]
+
+                    else:
+                        st.session_state['poster']['design']['choices']['size'] = sizes[idx]
+
                     st.rerun()
 
 
@@ -249,37 +238,37 @@ with st.container():
 
     with left:
         def go_to_previous_page():
-            if st.session_state['page'] > 0:
-                st.session_state['page'] -= 1
+            if st.session_state['poster']['design']['page'] > 0:
+                st.session_state['poster']['design']['page'] -= 1
 
 
-        if st.session_state['page'] > 0:
+        if st.session_state['poster']['design']['page'] > 0:
             st.markdown('<div style="height: 200px; width: 100%;">', unsafe_allow_html=True)
             st.button(
                 '<- Back', key='back_btn', help='Previous', on_click=go_to_previous_page,
-                disabled=st.session_state['page'] == 0, use_container_width=True
+                disabled=st.session_state['poster']['design']['page'] == 0, use_container_width=True
             )
             st.markdown('</div>', unsafe_allow_html=True)
 
     with right:
         def go_to_next_page():
-            if st.session_state['page'] < PAGES - 1:
-                st.session_state['page'] += 1
+            if st.session_state['poster']['design']['page'] < PAGES - 1:
+                st.session_state['poster']['design']['page'] += 1
 
 
         def finalize():
-            st.session_state['finalized'] = True
+            st.session_state['poster']['design']['finalized'] = True
 
 
         st.markdown('<div style="height: 200px; width: 100%;">', unsafe_allow_html=True)
-        if st.session_state.page < PAGES - 1:
+        if st.session_state['poster']['design']['page'] < PAGES - 1:
             st.button('Next ->', key='next_btn', help='Next', on_click=go_to_next_page, use_container_width=True)
         else:
             st.button('Finish ✔', key='finish_btn', help='Finalize', on_click=finalize, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 with st.container():
-    if st.session_state['finalized']:
+    if st.session_state['poster']['design']['finalized']:
         st.divider()
         st.markdown('<h3 style="text-align: center;">Your Final Choices</h3>', unsafe_allow_html=True)
 
@@ -287,14 +276,12 @@ with st.container():
         with middle:
             st.success('Your preferences have been saved.')
 
-            for i, choice in enumerate(st.session_state['choices']):
-                if choice is None:
-                    label = 'Not selected'
-                else:
-                    try:
-                        label = options_text[i][choice]
-                    except IndexError:
-                        label = f'Option {choice + 1}'
+            i = 0
+            for key, value in st.session_state['poster']['design']['choices'].items():
+                if key == 'font_link':
+                    continue
+
+                label = value if value is not None else 'Not selected'
 
                 st.markdown(
                     f"""<div style="background-color: #F0F0F0; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 6px solid #FCA311; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
@@ -303,3 +290,10 @@ with st.container():
         <span style="font-size: 1.2em; font-weight: 700; color: #14213D;">{label}</span>
     </div>""",
                     unsafe_allow_html=True)
+                i += 1
+
+        st.divider()
+        _, middle, _ = st.columns([1, 0.5, 1])
+        with middle:
+            if st.button('Choose Layout', type='primary', width='stretch'):
+                st.switch_page('pages/Layout_Preference_Page.py')

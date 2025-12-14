@@ -135,25 +135,20 @@ def get_thumbnail_position_name(idx: int) -> str:
 
 st.set_page_config(page_title='Layout Preferences', layout='wide', initial_sidebar_state='collapsed')
 
-_num_support_images = int('support_image_1' in st.session_state) + int('support_image_2' in st.session_state)
+if 'poster' not in st.session_state:
+    st.switch_page('pages/Assets_Page.py')
 
-PAGES = 2 + _num_support_images
+NUM_SUPPORT_IMAGES = sum(1 for image in st.session_state['poster']['assets']['support_images'] if image is not None)
+
+PAGES = 2 + NUM_SUPPORT_IMAGES
 OPTIONS_PER_PAGE = 9
 
-if 'layout_idx' not in st.session_state:
-    st.session_state['layout_idx'] = 0
+# Ensure choices list size matches PAGES
+if not st.session_state['poster']['layout']['choices'] or len(st.session_state['poster']['layout']['choices']) != PAGES:
+    st.session_state['poster']['layout']['choices'] = [None] * PAGES
 
-if 'choices' not in st.session_state:
-    st.session_state['choices'] = [None] * PAGES
-
-if 'layout_finalized' not in st.session_state:
-    st.session_state['layout_finalized'] = False
-
-if 'raw_poster_image' not in st.session_state:
-    st.session_state['raw_poster_image'] = None
-
-page_labels = generate_page_labels(_num_support_images)
-options_text = generate_page_headings(_num_support_images)
+page_labels = generate_page_labels(NUM_SUPPORT_IMAGES)
+options_text = generate_page_headings(NUM_SUPPORT_IMAGES)
 
 st.markdown(
     """
@@ -195,7 +190,7 @@ with st.container():
 
     with middle:
         st.markdown(
-            f'<h3 style="text-align: center; margin-bottom: 30px;">{page_labels[st.session_state["layout_idx"]]}</h3>',
+            f'<h3 style="text-align: center; margin-bottom: 30px;">{page_labels[st.session_state["poster"]["layout"]["page"]]}</h3>',
             unsafe_allow_html=True
         )
 
@@ -222,49 +217,49 @@ with st.container():
                         st.image(option_thumbnails[i])
 
                     if st.button(
-                            'Slot Occupied' if i in st.session_state['choices'] else
+                            'Slot Occupied' if i in st.session_state['poster']['layout']['choices'] else
                             get_thumbnail_position_name(i),
-                            key=f'option_{st.session_state["layout_idx"]}_{i}', type='primary',
-                            use_container_width=True, disabled=i in st.session_state['choices']
+                            key=f'option_{st.session_state["poster"]["layout"]["page"]}_{i}', type='primary',
+                            use_container_width=True, disabled=i in st.session_state['poster']['layout']['choices']
                     ):
-                        st.session_state['choices'][st.session_state['layout_idx']] = i
+                        st.session_state['poster']['layout']['choices'][
+                            st.session_state['poster']['layout']['page']] = i
                         st.rerun()
 
 
-        page = st.session_state['layout_idx']
+        page = st.session_state['poster']['layout']['page']
 
         if page == 0:
-            render_option(st.session_state.get('hero_image'))
+            render_option(st.session_state['poster']['assets']['hero_image'])
         elif page == 1:
-            render_option(st.session_state.get('logo_image'))
+            render_option(st.session_state['poster']['assets']['logo_image'])
         elif page == 2:
-            render_option(st.session_state.get('support_image_1'))
+            render_option(st.session_state['poster']['assets']['support_images'][0])
         else:
-            render_option(st.session_state.get('support_image_2'))
+            render_option(st.session_state['poster']['assets']['support_images'][1])
 
     with left:
         def go_to_previous_page():
-            if st.session_state['layout_idx'] > 0:
-                st.session_state['layout_idx'] -= 1
-                st.info(st.session_state['layout_idx'])
+            if st.session_state['poster']['layout']['page'] > 0:
+                st.session_state['poster']['layout']['page'] -= 1
 
 
-        if st.session_state['layout_idx'] > 0:
+        if st.session_state['poster']['layout']['page'] > 0:
             st.button(
                 '<- Back', key='back_btn', help='Previous', on_click=go_to_previous_page, use_container_width=True
             )
 
     with right:
         def go_to_next_page():
-            if st.session_state['layout_idx'] < PAGES:
-                st.session_state['layout_idx'] += 1
+            if st.session_state['poster']['layout']['page'] < PAGES - 1:
+                st.session_state['poster']['layout']['page'] += 1
 
 
         def finalize():
-            st.session_state['layout_finalized'] = True
+            st.session_state['poster']['layout']['finalized'] = True
 
 
-        if st.session_state['layout_idx'] < PAGES - 1:
+        if st.session_state['poster']['layout']['page'] < PAGES - 1:
             st.button('Next ->', key='next_btn', help='Next', on_click=go_to_next_page, use_container_width=True)
         else:
             st.button('Finish ✔', key='finish_btn', help='Finalize', on_click=finalize, use_container_width=True)
@@ -291,30 +286,30 @@ with st.container():
             canvas.paste(asset_copy, position, asset_copy)
 
 
-    for idx, choice in enumerate(st.session_state['choices']):
+    for idx, choice in enumerate(st.session_state['poster']['layout']['choices']):
         if choice is None:
             continue
 
         if idx == 0:
-            overlay_asset(st.session_state.get('hero_image'), choice, CANVAS_SIZE)
+            overlay_asset(st.session_state['poster']['assets']['hero_image'], choice, CANVAS_SIZE)
 
         elif idx == 1:
-            overlay_asset(st.session_state.get('logo_image'), choice, CANVAS_SIZE)
+            overlay_asset(st.session_state['poster']['assets']['logo_image'], choice, CANVAS_SIZE)
 
         elif idx == 2:
-            overlay_asset(st.session_state.get('support_image_1'), choice, CANVAS_SIZE)
+            overlay_asset(st.session_state['poster']['assets']['support_images'][0], choice, CANVAS_SIZE)
 
         else:
-            overlay_asset(st.session_state.get('support_image_2'), choice, CANVAS_SIZE)
+            overlay_asset(st.session_state['poster']['assets']['support_images'][1], choice, CANVAS_SIZE)
 
     _, middle, _ = st.columns([1, 2, 1])
     with middle:
         st.image(canvas, caption='Poster Preview', use_container_width=True)
 
-    if st.session_state['layout_finalized']:
+    if st.session_state['poster']['layout']['finalized']:
         st.divider()
         st.info('Your layout preferences have been saved.')
 
-        st.session_state['raw_poster_image'] = canvas
+        st.session_state['poster']['preview']['raw_poster_image'] = canvas
         if st.button('Finalize & Generate', type='primary', use_container_width=True):
             st.switch_page('pages/Poster_Validation_Page.py')
