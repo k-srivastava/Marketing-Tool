@@ -296,7 +296,7 @@ Prompts include examples to steer model behavior and to improve determinism for 
 
 Below is the latest generated poster artifact saved by the backend (for demo):
 
-![Generated Poster](assets/images/generated.png)
+![Generated Poster](assets/generated.png)
 
 ---
 
